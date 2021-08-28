@@ -16,6 +16,8 @@ import PageTitle from "../components/PageTitle";
 import routes from "../routes";
 import { gql, useMutation } from "@apollo/client";
 import { logUserIn } from "../apollo";
+import { useLocation } from "react-router-dom";
+import { Notification } from "../components/shared";
 
 const FacebookLogin = styled.div`
   color: #385285;
@@ -36,6 +38,8 @@ const LOGIN_MUTATION = gql`
 `;
 
 const Login = () => {
+  const location = useLocation();
+
   const {
     register,
     handleSubmit,
@@ -45,6 +49,10 @@ const Login = () => {
     clearErrors,
   } = useForm({
     mode: "onChange",
+    defaultValues: {
+      username: location?.state?.username || "",
+      password: location?.state?.password || "",
+    },
   });
 
   const onCompleted = (data) => {
@@ -82,6 +90,9 @@ const Login = () => {
 
   return (
     <AuthLayout>
+      {location?.state?.message ? (
+        <Notification>{location?.state?.message}</Notification>
+      ) : null}
       <PageTitle title="Login" />
       <FormBox>
         <div>

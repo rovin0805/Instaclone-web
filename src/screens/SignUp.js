@@ -48,13 +48,21 @@ const CREATE_ACCOUNT_MATATION = gql`
 `;
 
 function SignUp() {
-  const { register, handleSubmit, setError, clearErrors, formState } = useForm({
+  const {
+    register,
+    handleSubmit,
+    setError,
+    clearErrors,
+    formState,
+    getValues,
+  } = useForm({
     mode: "onChange",
   });
 
   const history = useHistory();
 
   const onCompleted = (data) => {
+    const { username, password } = getValues();
     const {
       createAccount: { ok, error },
     } = data;
@@ -63,7 +71,11 @@ function SignUp() {
         message: error,
       });
     }
-    history.push(routes.home);
+    history.push(routes.home, {
+      message: "Account created. Please log in.",
+      username,
+      password,
+    });
   };
 
   const [createAccount, { loading }] = useMutation(CREATE_ACCOUNT_MATATION, {
@@ -95,7 +107,7 @@ function SignUp() {
         </HeaderContainer>
         <form onSubmit={handleSubmit(onSubmitValid)}>
           <Input
-            {...register("username", {
+            {...register("firstName", {
               required: "First Name is required",
             })}
             name="firstName"
@@ -106,7 +118,7 @@ function SignUp() {
           />
           <FormError message={formState.errors?.firstName?.message} />
           <Input
-            {...register("username", {
+            {...register("lastName", {
               required: "Last Name is required",
             })}
             type="text"
@@ -117,7 +129,7 @@ function SignUp() {
           />
           <FormError message={formState.errors?.lastName?.message} />
           <Input
-            {...register("username", {
+            {...register("email", {
               required: "Email is required",
             })}
             name="email"
@@ -143,7 +155,7 @@ function SignUp() {
           />
           <FormError message={formState.errors?.username?.message} />
           <Input
-            {...register("username", {
+            {...register("password", {
               required: "Password is required",
             })}
             name="password"
