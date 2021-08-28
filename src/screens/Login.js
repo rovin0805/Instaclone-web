@@ -14,6 +14,8 @@ import Separator from "../components/auth/Separator";
 import FormError from "../components/auth/FormError";
 import PageTitle from "../components/PageTitle";
 import routes from "../routes";
+import { gql, useMutation } from "@apollo/client";
+import { logUserIn } from "../apollo";
 
 const FacebookLogin = styled.div`
   color: #385285;
@@ -23,12 +25,60 @@ const FacebookLogin = styled.div`
   }
 `;
 
+const LOGIN_MUTATION = gql`
+  mutation login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      ok
+      token
+      error
+    }
+  }
+`;
+
 const Login = () => {
-  const { register, handleSubmit, formState } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState,
+    getValues,
+    setError,
+    clearErrors,
+  } = useForm({
     mode: "onChange",
   });
-  const onSubmitValid = (data) => console.log(data);
-  const onSubmitInvalid = (data) => console.log(data);
+
+  const onCompleted = (data) => {
+    const {
+      login: { ok, error, token },
+    } = data;
+    if (!ok) {
+      return setError("result", {
+        message: error,
+      });
+    }
+    if (token) {
+      logUserIn(token);
+    }
+  };
+
+  const [login, { loading }] = useMutation(LOGIN_MUTATION, {
+    onCompleted,
+  });
+
+  const onSubmitValid = (data) => {
+    if (loading) {
+      return;
+    }
+    const { username, password } = getValues();
+    login({
+      variables: {
+        username,
+        password,
+      },
+    });
+  };
+
+  const clearLoginError = () => clearErrors("result");
 
   return (
     <AuthLayout>
@@ -37,19 +87,20 @@ const Login = () => {
         <div>
           <FontAwesomeIcon icon={faInstagram} size="3x" />
         </div>
-        <form onSubmit={handleSubmit(onSubmitValid, onSubmitInvalid)}>
+        <form onSubmit={handleSubmit(onSubmitValid)}>
           <Input
             {...register("username", {
               required: "Username is required",
               minLength: {
-                value: 5,
-                message: "Username should be longer than 5 chars.",
+                value: 3,
+                message: "Username should be longer than 3 chars.",
               },
             })}
             name="username"
             type="text"
             placeholder="Username"
             hasError={Boolean(formState.errors?.username?.message)}
+            onFocus={clearLoginError}
           />
           <FormError message={formState.errors?.username?.message} />
           <Input
@@ -60,9 +111,15 @@ const Login = () => {
             type="password"
             placeholder="Password"
             hasError={Boolean(formState.errors?.password?.message)}
+            onFocus={clearLoginError}
           />
           <FormError message={formState.errors?.password?.message} />
-          <Button type="submit" value="Log in" disabled={!formState.isValid} />
+          <Button
+            type="submit"
+            value={loading ? "Loading" : "Log In"}
+            disabled={!formState.isValid || loading}
+          />
+          <FormError message={formState.errors?.result?.message} />
         </form>
         <Separator />
         <FacebookLogin>
