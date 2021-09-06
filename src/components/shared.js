@@ -27,3 +27,7 @@ const StyledNotification = styled.div`
 export const Notification = ({ children }) => (
   <StyledNotification>{children}</StyledNotification>
 );
+
+export const FatText = styled.span`
+  font-weight: 600;
+`;
