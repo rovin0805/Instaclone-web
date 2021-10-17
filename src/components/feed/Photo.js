@@ -1,3 +1,4 @@
+import { gql, useMutation } from "@apollo/client";
 import {
   faBookmark,
   faComment,
@@ -10,6 +11,15 @@ import PropTypes from "prop-types";
 import styled from "styled-components";
 import Avatar from "../Avatar";
 import { FatText } from "../shared";
+
+const TOGGLE_LIKE_MUTATION = gql`
+  mutation toggleLike($id: Int!) {
+    toggleLike(id: $id) {
+      ok
+      error
+    }
+  }
+`;
 
 const PhotoContainer = styled.div`
   background-color: white;
@@ -62,6 +72,45 @@ const Likes = styled(FatText)`
 `;
 
 const Photo = ({ id, user, file, isLiked, likes }) => {
+  const updateToggleLike = (cache, result) => {
+    const {
+      data: {
+        toggleLike: { ok },
+      },
+    } = result;
+    if (ok) {
+      const fragmentId = `Photo:${id}`;
+      const fragment = gql`
+        fragment BSName on Photo {
+          isLiked
+          likes
+        }
+      `;
+      const result = cache.readFragment({
+        id: fragmentId,
+        fragment,
+      });
+      if ("isLiked" in result && "likes" in result) {
+        const { isLiked: cacheIsLiked, likes: cacheLikes } = result;
+        cache.writeFragment({
+          id: fragmentId,
+          fragment,
+          data: {
+            isLiked: !cacheIsLiked,
+            likes: cacheIsLiked ? cacheLikes - 1 : cacheLikes + 1,
+          },
+        });
+      }
+    }
+  };
+  const [toggleLikeMutation] = useMutation(TOGGLE_LIKE_MUTATION, {
+    variables: {
+      id,
+    },
+    // refetchQueries: [{query: FEED_QUERY, variables: {}}]
+    update: updateToggleLike,
+  });
+
   return (
     <PhotoContainer key={id}>
       <PhotoHeader>
@@ -72,7 +121,7 @@ const Photo = ({ id, user, file, isLiked, likes }) => {
       <PhotoData>
         <PhotoActions>
           <div>
-            <PhotoAction>
+            <PhotoAction onClick={toggleLikeMutation}>
               <FontAwesomeIcon
                 style={{ color: isLiked ? "tomato" : "inherit" }}
                 icon={isLiked ? SolidHeart : faHeart}
