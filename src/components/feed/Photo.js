@@ -147,6 +147,7 @@ const Photo = ({
           caption={caption}
           commentNumber={commentNumber}
           comments={comments}
+          photoId={id}
         />
       </PhotoData>
     </PhotoContainer>
