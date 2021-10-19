@@ -121,8 +121,11 @@ const Comments = ({ author, caption, commentNumber, comments, photoId }) => {
       {comments?.map((comment) => (
         <Comment
           key={comment.id}
+          photoId={photoId}
+          id={comment.id}
           author={comment.user.username}
           payload={comment.payload}
+          isMine={comment.isMine}
         />
       ))}
       <PostCommentContainer>
