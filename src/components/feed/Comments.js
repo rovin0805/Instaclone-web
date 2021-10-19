@@ -16,6 +16,20 @@ const CommentCount = styled.span`
   font-size: 10px;
 `;
 
+const PostCommentContainer = styled.div`
+  margin-top: 10px;
+  padding-top: 15px;
+  padding-bottom: 10px;
+  border-top: 1px solid ${(props) => props.theme.borderColor};
+`;
+
+const PostCommentInput = styled.input`
+  width: 100%;
+  &::placeholder {
+    font-size: 12px;
+  }
+`;
+
 const CREATE_COMMENT_MUTATION = gql`
   mutation createComment($photoId: Int!, $payload: String!) {
     createComment(photoId: $photoId, payload: $payload) {
@@ -111,9 +125,9 @@ const Comments = ({ author, caption, commentNumber, comments, photoId }) => {
           payload={comment.payload}
         />
       ))}
-      <div>
+      <PostCommentContainer>
         <form onSubmit={handleSubmit(onValid)}>
-          <input
+          <PostCommentInput
             {...register("payload", {
               required: true,
             })}
@@ -122,7 +136,7 @@ const Comments = ({ author, caption, commentNumber, comments, photoId }) => {
             placeholder="write a comment..."
           />
         </form>
-      </div>
+      </PostCommentContainer>
     </CommentsContainer>
   );
 };
