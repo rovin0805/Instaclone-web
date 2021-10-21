@@ -52,4 +52,12 @@ const authLink = setContext((_, { headers }) => {
 export const client = new ApolloClient({
   link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
+  // cache: new InMemoryCache({
+  //   // id가 아닌 고유식별자를 설정해줄 때
+  //   typePolicies: {
+  //     User: {
+  //       keyFields: (obj) => `User:${obj.username}`,
+  //     },
+  //   },
+  // }),
 });
